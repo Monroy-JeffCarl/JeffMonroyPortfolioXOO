@@ -27,6 +27,7 @@ export default {
         "#e1f5fe",
         "#ede7f6",
         "#fffde7",
+        "#8ACE00",
       ],
       showNoteModal: false,
       showDeleteModal: false,
@@ -37,7 +38,7 @@ export default {
         nickName: false,
         note: false,
       },
-      sidebarOpen: false
+      sidebarOpen: false,
     };
   },
   computed: {
@@ -47,14 +48,14 @@ export default {
   },
   mounted() {
     this.fetchNotes();
-    
+
     this.$nextTick(() => {
       document.querySelectorAll(".dropdown-toggle").forEach((el) => {
         new Dropdown(el);
       });
     });
 
-    document.addEventListener('click', this.handleClickOutside);
+    document.addEventListener("click", this.handleClickOutside);
   },
   methods: {
     setView(view) {
@@ -160,9 +161,9 @@ export default {
       this.showNoteModal = false;
       this.showDeleteModal = false;
       this.showSuccessModal = false;
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     },
     resetForm() {
       this.nickName = "";
@@ -174,17 +175,19 @@ export default {
       this.sidebarOpen = !this.sidebarOpen;
     },
     handleClickOutside(event) {
-      const sidebar = document.getElementById('sidebar');
-      const toggleBtn = document.querySelector('.sidebar-toggle');
-      if (this.sidebarOpen && 
-          !sidebar.contains(event.target) && 
-          !toggleBtn.contains(event.target)) {
+      const sidebar = document.getElementById("sidebar");
+      const toggleBtn = document.querySelector(".sidebar-toggle");
+      if (
+        this.sidebarOpen &&
+        !sidebar.contains(event.target) &&
+        !toggleBtn.contains(event.target)
+      ) {
         this.sidebarOpen = false;
       }
     },
   },
   beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside);
+    document.removeEventListener("click", this.handleClickOutside);
   },
 };
 </script>
@@ -195,20 +198,20 @@ export default {
 
     <div class="main-container">
       <!-- Sidebar Toggle Button -->
-      <button 
-        class="btn sidebar-toggle d-lg-none" 
-        type="button" 
+      <button
+        class="btn sidebar-toggle d-lg-none"
+        type="button"
         @click="toggleSidebar"
-        :class="{ 'active': sidebarOpen }"
+        :class="{ active: sidebarOpen }"
       >
         <i class="fas fa-bars"></i>
       </button>
 
       <!-- Sidebar -->
-      <div 
-        class="sidebar mx-3 " 
+      <div
+        class="sidebar mx-3"
         id="sidebar"
-        :class="{ 'show': sidebarOpen, 'd-none d-lg-block': !sidebarOpen }"
+        :class="{ show: sidebarOpen, 'd-none d-lg-block': !sidebarOpen }"
       >
         <div class="list-group list-group-flush">
           <button
@@ -318,7 +321,10 @@ export default {
     </div>
 
     <!-- Modal Container with Backdrop -->
-    <div v-if="showNoteModal || showDeleteModal || showSuccessModal" class="modal-container">
+    <div
+      v-if="showNoteModal || showDeleteModal || showSuccessModal"
+      class="modal-container"
+    >
       <!-- Note Modal -->
       <div v-if="showNoteModal" class="modal-wrapper">
         <div class="modal-content">
@@ -326,7 +332,11 @@ export default {
             <h5 class="modal-title">
               {{ modalTitle }} <span class="text-warning">Note</span>
             </h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="closeModal"
+            ></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="saveNote">
@@ -390,8 +400,15 @@ export default {
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="button" class="btn btn-warning" @click="saveNote" :disabled="isFormInvalid">
+            <button type="button" class="btn btn-secondary" @click="closeModal">
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-warning"
+              @click="saveNote"
+              :disabled="isFormInvalid"
+            >
               {{ saveButtonText }}
             </button>
           </div>
@@ -402,15 +419,25 @@ export default {
       <div v-if="showDeleteModal" class="modal-wrapper">
         <div class="modal-content">
           <div class="modal-header bg-dark text-light">
-            <h5 class="modal-title">Confirm <span class="text-danger">Deletion</span></h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+            <h5 class="modal-title">
+              Confirm <span class="text-danger">Deletion</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="closeModal"
+            ></button>
           </div>
           <div class="modal-body">
             Are you sure you want to delete this note?
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-            <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
+            <button type="button" class="btn btn-secondary" @click="closeModal">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" @click="confirmDelete">
+              Delete
+            </button>
           </div>
         </div>
       </div>
@@ -420,13 +447,19 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-success text-light">
             <h5 class="modal-title">Success</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="closeModal"
+            ></button>
           </div>
           <div class="modal-body">
             {{ successMessage }}
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+            <button type="button" class="btn btn-secondary" @click="closeModal">
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -621,7 +654,7 @@ export default {
   .content-wrapper {
     padding: 16px;
   }
-  
+
   .notes-grid {
     column-count: 1;
   }
@@ -705,7 +738,9 @@ export default {
   border: 0;
   border-radius: 0.25rem;
   opacity: 0.75;
-  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+  background: transparent
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e")
+    center/1em auto no-repeat;
 }
 
 .btn-close:hover {
