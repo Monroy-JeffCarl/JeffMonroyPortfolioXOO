@@ -61,10 +61,10 @@ export default {
   },
   watch: {
     currentView(newView) {
-      if (newView === 'notes') {
+      if (newView === "notes") {
         this.fetchNicknames();
       }
-    }
+    },
   },
   methods: {
     setView(view) {
@@ -91,7 +91,7 @@ export default {
     async fetchNicknames() {
       try {
         const response = await axios.get(`${API_URL}/users`);
-        this.availableNicknames = response.data.map(user => user.nickname);
+        this.availableNicknames = response.data.map((user) => user.nickname);
       } catch (error) {
         console.error("Error fetching nicknames:", error);
       }
@@ -294,7 +294,7 @@ export default {
                   backgroundColor: note.noteColor,
                 }"
               >
-                <div class="card-body">
+                <div class="card-body" lang="en">
                   <h6 class="card-title">From: {{ note.nickName }}</h6>
                   <p class="card-text">{{ note.note }}</p>
                   <small class="text-muted">{{ note.formattedDate }}</small>
@@ -359,15 +359,19 @@ export default {
             <form @submit.prevent="saveNote">
               <div class="mb-3">
                 <label for="nickName" class="form-label">Nickname</label>
-                <select 
-                  class="form-select" 
-                  id="nickName" 
+                <select
+                  class="form-select"
+                  id="nickName"
                   v-model="nickName"
                   :class="{ 'is-invalid': errors.nickName }"
                   @change="validateNickName"
                 >
                   <option value="">Select a nickname</option>
-                  <option v-for="nick in availableNicknames" :key="nick" :value="nick">
+                  <option
+                    v-for="nick in availableNicknames"
+                    :key="nick"
+                    :value="nick"
+                  >
                     {{ nick }}
                   </option>
                 </select>
@@ -814,5 +818,20 @@ export default {
   .modal-wrapper {
     margin: 0.5rem;
   }
+}
+
+.card-text {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-align: justify;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.card-body {
+  lang: en;
 }
 </style>
