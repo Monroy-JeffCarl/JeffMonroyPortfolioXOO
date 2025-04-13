@@ -39,6 +39,7 @@ export default {
         note: false,
       },
       sidebarOpen: false,
+      availableNicknames: [],
     };
   },
   computed: {
@@ -48,6 +49,7 @@ export default {
   },
   mounted() {
     this.fetchNotes();
+    this.fetchNicknames();
 
     this.$nextTick(() => {
       document.querySelectorAll(".dropdown-toggle").forEach((el) => {
@@ -77,6 +79,14 @@ export default {
         }));
       } catch (error) {
         console.error("Error fetching notes:", error);
+      }
+    },
+    async fetchNicknames() {
+      try {
+        const response = await axios.get(`${API_URL}/notes`);
+        this.availableNicknames = [...new Set(response.data.map(note => note.nickName))];
+      } catch (error) {
+        console.error("Error fetching nicknames:", error);
       }
     },
     selectColor(color) {
@@ -341,19 +351,21 @@ export default {
           <div class="modal-body">
             <form @submit.prevent="saveNote">
               <div class="mb-3">
-                <label for="nickname" class="form-label">Nickname</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nickname"
-                  v-model.trim="nickName"
-                  @blur="validateNickName"
-                  @input="validateNickName"
+                <label for="nickName" class="form-label">Nickname</label>
+                <select 
+                  class="form-select" 
+                  id="nickName" 
+                  v-model="nickName"
                   :class="{ 'is-invalid': errors.nickName }"
-                  required
-                />
-                <div v-if="errors.nickName" class="invalid-feedback d-block">
-                  Nickname cannot be empty.
+                  @change="validateNickName"
+                >
+                  <option value="">Select a nickname</option>
+                  <option v-for="nick in availableNicknames" :key="nick" :value="nick">
+                    {{ nick }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" v-if="errors.nickName">
+                  Please select a nickname
                 </div>
               </div>
 
