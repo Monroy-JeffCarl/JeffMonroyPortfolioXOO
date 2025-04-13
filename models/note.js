@@ -10,20 +10,53 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Note.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+      });
     }
   }
   Note.init({
-    user_id: DataTypes.INTEGER,
-    note: DataTypes.TEXT,
-    note_color: DataTypes.STRING,
-    is_deleted: DataTypes.BOOLEAN,
-    created_at: DataTypes.DATE,
-    updated_at: DataTypes.DATE,
-    deleted_at: DataTypes.DATE
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    note: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    note_color: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: '#f8f9fa'
+    },
+    is_deleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Note',
+    tableName: 'Notes',
+    timestamps: false
   });
   return Note;
 };

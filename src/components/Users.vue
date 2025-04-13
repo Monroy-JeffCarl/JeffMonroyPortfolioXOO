@@ -20,16 +20,8 @@ export default {
   methods: {
     async fetchUsers() {
       try {
-        const response = await axios.get(`${API_URL}/notes`);
-        // Get unique nicknames from notes
-        const uniqueNicknames = [...new Set(response.data.map(note => note.nickName))];
-        
-        // Create users array with unique nicknames
-        this.users = uniqueNicknames.map((nickname, index) => ({
-          id: index + 1,
-          nickname: nickname,
-          role: "User" // Default role
-        }));
+        const response = await axios.get(`${API_URL}/users`);
+        this.users = response.data;
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -61,10 +53,17 @@ export default {
           return;
         }
 
+        // Map role string to role_id
+        const roleMap = {
+          "Admin": 1,
+          "Moderator": 2,
+          "User": 3
+        };
+
         // Add the new user to the database
         await axios.post(`${API_URL}/users`, {
           nickname: this.newUser.nickname.trim(),
-          role: this.newUser.role
+          role_id: roleMap[this.newUser.role]
         });
 
         // Refresh the users list

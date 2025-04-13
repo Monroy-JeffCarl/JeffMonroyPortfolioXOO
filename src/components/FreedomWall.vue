@@ -59,6 +59,13 @@ export default {
 
     document.addEventListener("click", this.handleClickOutside);
   },
+  watch: {
+    currentView(newView) {
+      if (newView === 'notes') {
+        this.fetchNicknames();
+      }
+    }
+  },
   methods: {
     setView(view) {
       this.currentView = view;
@@ -83,8 +90,8 @@ export default {
     },
     async fetchNicknames() {
       try {
-        const response = await axios.get(`${API_URL}/notes`);
-        this.availableNicknames = [...new Set(response.data.map(note => note.nickName))];
+        const response = await axios.get(`${API_URL}/users`);
+        this.availableNicknames = response.data.map(user => user.nickname);
       } catch (error) {
         console.error("Error fetching nicknames:", error);
       }
