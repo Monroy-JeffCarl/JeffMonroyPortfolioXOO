@@ -1,17 +1,27 @@
 <script>
 import axios from "axios";
 
-const API_URL = "http://localhost:6408";
+const API_URL = "http://localhost:6411";
 
 export default {
   data() {
     return {
       users: [],
       showAddUserModal: false,
+      showEditUserModal: false,
+      showDeleteUserModal: false,
+      showSuccessModal: false,
+      successMessage: "",
       newUser: {
         nickname: "",
         role: "User"
       },
+      editingUser: {
+        id: null,
+        nickname: "",
+        role: "User"
+      },
+      userToDelete: null,
       errors: {
         nickname: false
       }
@@ -37,12 +47,42 @@ export default {
       };
       this.errors.nickname = false;
     },
-    validateNickname() {
-      this.errors.nickname = !this.newUser.nickname.trim();
-      return !this.errors.nickname;
+    openEditUserModal(user) {
+      this.editingUser = {
+        id: user.id,
+        nickname: user.nickname,
+        role: user.role
+      };
+      this.showEditUserModal = true;
+    },
+    closeEditUserModal() {
+      this.showEditUserModal = false;
+      this.editingUser = {
+        id: null,
+        nickname: "",
+        role: "User"
+      };
+      this.errors.nickname = false;
+    },
+    openDeleteUserModal(user) {
+      this.userToDelete = user;
+      this.showDeleteUserModal = true;
+    },
+    closeDeleteUserModal() {
+      this.showDeleteUserModal = false;
+      this.userToDelete = null;
+    },
+    validateNickname(type = 'new') {
+      if (type === 'new') {
+        this.errors.nickname = !this.newUser.nickname.trim();
+        return !this.errors.nickname;
+      } else {
+        this.errors.nickname = !this.editingUser.nickname.trim();
+        return !this.errors.nickname;
+      }
     },
     async addUser() {
-      if (!this.validateNickname()) {
+      if (!this.validateNickname('new')) {
         return;
       }
 
@@ -56,8 +96,8 @@ export default {
         // Map role string to role_id
         const roleMap = {
           "Admin": 1,
-          "Moderator": 2,
-          "User": 3
+          "User": 2,
+          "Guest": 3
         };
 
         // Add the new user to the database
@@ -71,7 +111,70 @@ export default {
         this.closeAddUserModal();
       } catch (error) {
         console.error("Error adding user:", error);
-        alert("Failed to add user. Please try again.");
+        if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert("Failed to add user. Please try again.");
+        }
+      }
+    },
+    async updateUser() {
+      if (!this.validateNickname('edit')) {
+        return;
+      }
+
+      try {
+        // Map role string to role_id
+        const roleMap = {
+          "Admin": 1,
+          "User": 2,
+          "Guest": 3
+        };
+
+        // Update the user in the database
+        const response = await axios.put(`${API_URL}/users/${this.editingUser.id}`, {
+          nickname: this.editingUser.nickname.trim(),
+          role_id: roleMap[this.editingUser.role]
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        // Refresh the users list
+        await this.fetchUsers();
+        this.closeEditUserModal();
+      } catch (error) {
+        console.error("Error updating user:", error);
+        if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert("Failed to update user. Please try again.");
+        }
+      }
+    },
+    closeSuccessModal() {
+      this.showSuccessModal = false;
+      this.successMessage = "";
+    },
+    async deleteUser() {
+      try {
+        const response = await axios.delete(`${API_URL}/users/${this.userToDelete.id}`, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        await this.fetchUsers();
+        this.closeDeleteUserModal();
+        this.successMessage = "User deleted successfully!";
+        this.showSuccessModal = true;
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert("Failed to delete user. Please try again.");
+        }
       }
     }
   },
@@ -103,8 +206,8 @@ export default {
             <td>{{ user.nickname }}</td>
             <td>{{ user.role }}</td>
             <td>
-              <button class="btn btn-sm btn-primary me-2">Edit</button>
-              <button class="btn btn-sm btn-danger">Delete</button>
+              <button class="btn btn-sm btn-primary me-2" @click="openEditUserModal(user)">Edit</button>
+              <button class="btn btn-sm btn-danger" @click="openDeleteUserModal(user)">Delete</button>
             </td>
           </tr>
         </tbody>
@@ -129,7 +232,8 @@ export default {
                   id="nickname"
                   v-model.trim="newUser.nickname"
                   :class="{ 'is-invalid': errors.nickname }"
-                  @blur="validateNickname"
+                  @blur="validateNickname('new')"
+                  @input="validateNickname('new')"
                   required
                 />
                 <div class="invalid-feedback" v-if="errors.nickname">
@@ -139,9 +243,9 @@ export default {
               <div class="mb-3">
                 <label for="role" class="form-label">Role</label>
                 <select class="form-select" id="role" v-model="newUser.role">
-                  <option value="User">User</option>
                   <option value="Admin">Admin</option>
-                  <option value="Moderator">Moderator</option>
+                  <option value="User">User</option>
+                  <option value="Guest">Guest</option>
                 </select>
               </div>
             </form>
@@ -149,6 +253,87 @@ export default {
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeAddUserModal">Close</button>
             <button type="button" class="btn btn-success" @click="addUser">Add User</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div v-if="showEditUserModal" class="modal-container">
+      <div class="modal-wrapper">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-light">
+            <h5 class="modal-title">Edit User</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeEditUserModal"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateUser">
+              <div class="mb-3">
+                <label for="edit-nickname" class="form-label">Nickname</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-nickname"
+                  v-model.trim="editingUser.nickname"
+                  :class="{ 'is-invalid': errors.nickname }"
+                  @blur="validateNickname('edit')"
+                  @input="validateNickname('edit')"
+                  required
+                />
+                <div class="invalid-feedback" v-if="errors.nickname">
+                  Nickname cannot be empty
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="edit-role" class="form-label">Role</label>
+                <select class="form-select" id="edit-role" v-model="editingUser.role">
+                  <option value="Admin">Admin</option>
+                  <option value="User">User</option>
+                  <option value="Guest">Guest</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeEditUserModal">Close</button>
+            <button type="button" class="btn btn-primary" @click="updateUser">Update User</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div v-if="showDeleteUserModal" class="modal-container">
+      <div class="modal-wrapper">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-light">
+            <h5 class="modal-title">Delete User</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeDeleteUserModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete user "{{ userToDelete?.nickname }}"?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeDeleteUserModal">Cancel</button>
+            <button type="button" class="btn btn-danger" @click="deleteUser">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="modal-container">
+      <div class="modal-wrapper">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-light">
+            <h5 class="modal-title">Success</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeSuccessModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ successMessage }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="closeSuccessModal">OK</button>
           </div>
         </div>
       </div>

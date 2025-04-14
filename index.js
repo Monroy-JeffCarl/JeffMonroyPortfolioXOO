@@ -7,9 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5175"], 
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type",
+    origin: ["http://localhost:5173", "http://localhost:5175"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
 
@@ -221,7 +222,107 @@ app.post("/users", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 6408;
+// Update user endpoint
+app.put("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nickname, role_id } = req.body;
+
+    // Validate required fields
+    if (!nickname || !role_id) {
+      return res.status(400).json({ error: "Nickname and role_id are required" });
+    }
+
+    // Check if role exists
+    const role = await db.Role.findByPk(role_id);
+    if (!role) {
+      return res.status(400).json({ error: "Invalid role_id" });
+    }
+
+    // Check if user exists and is not deleted
+    const user = await db.User.findOne({
+      where: {
+        id: id,
+        is_deleted: false
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if new nickname is already taken by another user
+    const existingUser = await db.User.findOne({
+      where: {
+        nickname: nickname,
+        is_deleted: false,
+        id: { [db.Sequelize.Op.ne]: id }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: "This nickname is already taken" });
+    }
+
+    // Update the user
+    await user.update({
+      nickname,
+      role_id,
+      updated_at: new Date()
+    });
+
+    // Fetch the updated user with role information
+    const updatedUser = await db.User.findByPk(id, {
+      include: [{
+        model: db.Role,
+        as: 'role',
+        attributes: ['role_title']
+      }]
+    });
+
+    res.json({
+      id: updatedUser.id,
+      nickname: updatedUser.nickname,
+      role: updatedUser.role.role_title
+    });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete user endpoint (soft delete)
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists and is not deleted
+    const user = await db.User.findOne({
+      where: {
+        id: id,
+        is_deleted: false
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Soft delete the user
+    await user.update({
+      is_deleted: true,
+      deleted_at: new Date(),
+      updated_at: new Date()
+    });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const PORT = process.env.PORT || 6411;
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );

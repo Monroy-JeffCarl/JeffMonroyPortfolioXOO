@@ -5,7 +5,7 @@ const RoleModel = require("./role.js");
 
 const sequelize = new Sequelize("freedom_wall", "root", "", {
   host: "localhost",
-  //npmport: "6400";
+  port: "6400",
   dialect: "mysql",
 });
 

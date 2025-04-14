@@ -1,17 +1,17 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.bulkInsert('Notes', [
+    return queryInterface.bulkInsert('notes', [
       {
-        nickName: 'JohnDoe',
+        nickname: 'JohnDoe',
         note: 'This is a sample note.',
-        noteColor: '#ffcc00',
-        isDeleted: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        note_color: '#ffcc00',
+        is_deleted: false,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     ]);
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('Notes', null, {});
+    return queryInterface.bulkDelete('notes', null, {});
   },
 };

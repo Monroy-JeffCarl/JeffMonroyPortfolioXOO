@@ -5,7 +5,7 @@ import NavBarComponent from "./NavBar.vue";
 import UsersComponent from "./Users.vue";
 import RolesComponent from "./Roles.vue";
 
-const API_URL = "http://localhost:6408";
+const API_URL = "http://localhost:6411";
 
 export default {
   components: { NavBarComponent, UsersComponent, RolesComponent },
@@ -32,7 +32,7 @@ export default {
       showNoteModal: false,
       showDeleteModal: false,
       showSuccessModal: false,
-      noteToDelete: { id: null, index: null },
+      noteToDelete: null,
       successMessage: "",
       errors: {
         nickName: false,
@@ -159,25 +159,20 @@ export default {
       this.errors.note = !this.note.trim();
       return !this.errors.note;
     },
-    showDeleteModal(index, id) {
+    openDeleteModal(index, id) {
       this.noteToDelete = { index, id };
       this.showDeleteModal = true;
     },
-    async confirmDelete() {
-      try {
-        await axios.delete(`${API_URL}/notes/${this.noteToDelete.id}`);
-        this.notes.splice(this.noteToDelete.index, 1);
-        this.showDeleteModal = false;
-        this.successMessage = "Note deleted successfully!";
-        this.showSuccessModal = true;
-      } catch (error) {
-        console.error("Error deleting note:", error);
-      }
+    closeDeleteModal() {
+      this.showDeleteModal = false;
+      this.noteToDelete = null;
+    },
+    closeSuccessModal() {
+      this.showSuccessModal = false;
+      this.successMessage = "";
     },
     closeModal() {
       this.showNoteModal = false;
-      this.showDeleteModal = false;
-      this.showSuccessModal = false;
       document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
@@ -200,6 +195,18 @@ export default {
         !toggleBtn.contains(event.target)
       ) {
         this.sidebarOpen = false;
+      }
+    },
+    async confirmDelete() {
+      try {
+        await axios.delete(`${API_URL}/notes/${this.noteToDelete.id}`);
+        await this.fetchNotes(); // Refresh the notes list
+        this.closeDeleteModal();
+        this.successMessage = "Note deleted successfully!";
+        this.showSuccessModal = true;
+      } catch (error) {
+        console.error("Error deleting note:", error);
+        alert("Failed to delete note. Please try again.");
       }
     },
   },
@@ -315,16 +322,14 @@ export default {
                           class="dropdown-item"
                           href="#"
                           @click.prevent="editNote(index)"
-                          >Edit</a
-                        >
+                        >Edit</a>
                       </li>
                       <li>
                         <a
                           class="dropdown-item"
                           href="#"
-                          @click.prevent="showDeleteModal(index, note.id)"
-                          >Delete</a
-                        >
+                          @click.prevent="openDeleteModal(index, note.id)"
+                        >Delete</a>
                       </li>
                     </ul>
                   </div>
@@ -442,25 +447,15 @@ export default {
       <div v-if="showDeleteModal" class="modal-wrapper">
         <div class="modal-content">
           <div class="modal-header bg-dark text-light">
-            <h5 class="modal-title">
-              Confirm <span class="text-danger">Deletion</span>
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="closeModal"
-            ></button>
+            <h5 class="modal-title">Delete Note</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeDeleteModal"></button>
           </div>
           <div class="modal-body">
-            Are you sure you want to delete this note?
+            <p>Are you sure you want to delete this note?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">
-              Cancel
-            </button>
-            <button type="button" class="btn btn-danger" @click="confirmDelete">
-              Delete
-            </button>
+            <button type="button" class="btn btn-secondary" @click="closeDeleteModal">Cancel</button>
+            <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
           </div>
         </div>
       </div>
@@ -470,19 +465,13 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-success text-light">
             <h5 class="modal-title">Success</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="closeModal"
-            ></button>
+            <button type="button" class="btn-close btn-close-white" @click="closeSuccessModal"></button>
           </div>
           <div class="modal-body">
-            {{ successMessage }}
+            <p>{{ successMessage }}</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">
-              Close
-            </button>
+            <button type="button" class="btn btn-success" @click="closeSuccessModal">OK</button>
           </div>
         </div>
       </div>

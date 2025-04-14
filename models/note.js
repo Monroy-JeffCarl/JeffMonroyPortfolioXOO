@@ -19,9 +19,9 @@ module.exports = (sequelize, DataTypes) => {
   Note.init({
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
-        model: 'Users',
+        model: 'users',
         key: 'id'
       }
     },
@@ -55,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Note',
-    tableName: 'Notes',
+    tableName: 'notes',
     timestamps: false
   });
   return Note;

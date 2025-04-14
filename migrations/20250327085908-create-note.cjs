@@ -1,7 +1,7 @@
 /** @param {import('sequelize').QueryInterface} queryInterface */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Notes', {
+    await queryInterface.createTable('notes', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -16,19 +16,19 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
-      noteColor: {
+      note_color: {
         type: Sequelize.STRING, 
         allowNull: false,
       },
-      isDeleted: {
+      is_deleted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
       },

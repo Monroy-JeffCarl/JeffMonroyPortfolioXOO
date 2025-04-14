@@ -16,12 +16,12 @@ module.exports = {
         updated_at: new Date()
       },
       {
-        role_title: 'Moderator',
+        role_title: 'User',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        role_title: 'User',
+        role_title: 'Guest',
         created_at: new Date(),
         updated_at: new Date()
       }
