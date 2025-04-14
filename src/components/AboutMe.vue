@@ -1,5 +1,14 @@
 <script setup>
 import profileImage from "/assets/profile.png";
+
+const downloadResume = () => {
+  const link = document.createElement('a');
+  link.href = '/Monroy_Resume.pdf';
+  link.download = 'Monroy_Resume.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 </script>
 
 <template>
@@ -32,6 +41,18 @@ import profileImage from "/assets/profile.png";
       alt="Jeff Drawing"
       style="max-width: 40%"
     />
+  </div>
+
+  <div class="d-flex justify-content-center mt-5">   
+    <a href="https://github.com/Monroy-JeffCarl" target="_blank" class="fw-bold btn btn-dark mx-2">
+      GitHub
+    </a>
+    <a href="https://ph.linkedin.com/in/jeff-carl-monroy-b14a87152" target="_blank" class="fw-bold btn btn-primary mx-2">
+      LinkedIn
+    </a>
+    <button @click="downloadResume" class="fw-bold btn btn-secondary mx-2">
+      Resume
+    </button>
   </div>
 </template>
 

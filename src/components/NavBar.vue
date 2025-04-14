@@ -11,7 +11,9 @@ const scrollToSection = (sectionId, event) => {
 
   // Handle Freedom Wall navigation separately
   if (sectionId === 'freedom-wall') {
-    router.push('/freedom-wall');
+    // Clear any existing role selection
+    localStorage.removeItem('selectedRole');
+    router.push('/role-selection');
     return;
   }
 

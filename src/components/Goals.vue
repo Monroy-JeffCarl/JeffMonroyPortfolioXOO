@@ -10,12 +10,42 @@ export default {
 
 <script setup>
 const goals = [
-  { id: 1, title: "Get a Degree", color: "text-warning" },
-  { id: 2, title: "Dark card title", color: "text-info" },
-  { id: 3, title: "Travel", color: "text-warning" },
-  { id: 4, title: "Pursue Multimedia Arts", color: "text-info" },
-  { id: 5, title: "Dark card title", color: "text-warning" },
-  { id: 6, title: "Live Happily", color: "text-info" },
+{
+    id: 1,
+    title: "Get a Degree",
+    color: "text-warning",
+    description: "Complete your studies and earn a degree in your chosen field.",
+  },
+  {
+    id: 2,
+    title: "Earn More Money",
+    color: "text-info",
+    description: "Increase your income through better job opportunities or side hustles.",
+  },
+  {
+    id: 3,
+    title: "Travel",
+    color: "text-warning",
+    description: "Explore new places, experience different cultures, and broaden your perspective.",
+  },
+  {
+    id: 4,
+    title: "Pursue Multimedia Arts",
+    color: "text-info",
+    description: "Develop your creative skills and build a career in multimedia arts.",
+  },
+  {
+    id: 5,
+    title: "Improve Oneself",
+    color: "text-warning",
+    description: "Focus on personal growth, mental health, and self-improvement.",
+  },
+  {
+    id: 6,
+    title: "Live Happily",
+    color: "text-info",
+    description: "Achieve a fulfilling and joyful life by following your passions and values.",
+  },
 ];
 </script>
 
@@ -23,7 +53,7 @@ const goals = [
   <NavBarComponent />
   <section>
     <div class="container d-flex flex-column justify-content-center">
-      <h2 class="text-center mb-4">Goals</h2>
+      <h2 class="fw-bold text-center mb-4">Goals</h2>
       <div class="row justify-content-center">
         <div
           v-for="goal in goals"

@@ -40,12 +40,28 @@ export default {
       },
       sidebarOpen: false,
       availableNicknames: [],
+      selectedRole: localStorage.getItem('selectedRole') || 'guest',
     };
   },
   computed: {
     isFormInvalid() {
       return !this.nickName.trim() || !this.note.trim();
     },
+    canCreateNote() {
+      return this.selectedRole === 'admin' || this.selectedRole === 'user';
+    },
+    canEditNote() {
+      return this.selectedRole === 'admin' || this.selectedRole === 'user';
+    },
+    canDeleteNote() {
+      return this.selectedRole === 'admin' || this.selectedRole === 'user';
+    },
+    canAccessUsers() {
+      return this.selectedRole === 'admin';
+    },
+    canAccessRoles() {
+      return this.selectedRole === 'admin';
+    }
   },
   mounted() {
     this.fetchNotes();
@@ -68,6 +84,8 @@ export default {
   },
   methods: {
     setView(view) {
+      if (view === 'users' && !this.canAccessUsers) return;
+      if (view === 'roles' && !this.canAccessRoles) return;
       this.currentView = view;
       this.sidebarOpen = false;
     },
@@ -250,6 +268,7 @@ export default {
       >
         <div class="list-group list-group-flush">
           <button
+            v-if="canAccessUsers"
             class="list-group-item list-group-item-action bg-light"
             :class="{ active: currentView === 'users' }"
             @click="setView('users')"
@@ -258,6 +277,7 @@ export default {
             Users
           </button>
           <button
+            v-if="canAccessRoles"
             class="list-group-item list-group-item-action bg-light"
             :class="{ active: currentView === 'roles' }"
             @click="setView('roles')"
@@ -293,6 +313,7 @@ export default {
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Freedom Wall</h2>
             <button
+              v-if="canCreateNote"
               type="button"
               class="btn btn-info"
               @click="showNoteModal = true"
@@ -317,7 +338,7 @@ export default {
                   <p class="card-text">{{ note.note }}</p>
                   <small class="text-muted">{{ note.formattedDate }}</small>
                 </div>
-                <div class="position-absolute top-0 end-0 m-2">
+                <div v-if="canEditNote || canDeleteNote" class="position-absolute top-0 end-0 m-2">
                   <div class="dropdown">
                     <button
                       class="btn btn-sm"
@@ -328,14 +349,14 @@ export default {
                       <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <ul class="dropdown-menu">
-                      <li>
+                      <li v-if="canEditNote">
                         <a
                           class="dropdown-item"
                           href="#"
                           @click.prevent="editNote(index)"
                         >Edit</a>
                       </li>
-                      <li>
+                      <li v-if="canDeleteNote">
                         <a
                           class="dropdown-item"
                           href="#"

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../components/HomePage.vue'
 import FreedomWallComponent from '../components/FreedomWall.vue'
+import RoleSelection from '../components/RoleSelection.vue'
 
 const routes = [
   {
@@ -11,7 +12,20 @@ const routes = [
   {
     path: '/freedom-wall',
     name: 'FreedomWall',
-    component: FreedomWallComponent
+    component: FreedomWallComponent,
+    beforeEnter: (to, from, next) => {
+      const selectedRole = localStorage.getItem('selectedRole');
+      if (!selectedRole) {
+        next('/role-selection');
+      } else {
+        next();
+      }
+    }
+  },
+  {
+    path: '/role-selection',
+    name: 'RoleSelection',
+    component: RoleSelection
   }
 ]
 

@@ -13,12 +13,11 @@ const db = {};
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-// Initialize models
+// models
 db.Note = NoteModel(sequelize, Sequelize);
 db.User = UserModel(sequelize, Sequelize);
 db.Role = RoleModel(sequelize, Sequelize);
 
-// Set up associations
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
