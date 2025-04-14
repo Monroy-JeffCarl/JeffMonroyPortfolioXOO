@@ -110,14 +110,50 @@ app.post("/notes", async (req, res) => {
 app.put("/notes/:id", async (req, res) => {
   try {
     const { nickName, note, noteColor } = req.body;
+    
+    // Find the user by nickname
+    const user = await db.User.findOne({
+      where: {
+        nickname: nickName,
+        is_deleted: false
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
     const updatedNote = await db.Note.update(
-      { nickName, note, noteColor },
+      { 
+        user_id: user.id,
+        note: note,
+        note_color: noteColor,
+        updated_at: new Date()
+      },
       { where: { id: req.params.id } }
     );
+    
     if (updatedNote[0] === 0) {
       return res.status(404).json({ error: "Note not found" });
     }
-    res.json({ message: "Note updated" });
+    
+    // Fetch the updated note with user information
+    const updatedNoteWithUser = await db.Note.findByPk(req.params.id, {
+      include: [{
+        model: db.User,
+        as: 'user',
+        attributes: ['nickname']
+      }]
+    });
+    
+    res.json({
+      id: updatedNoteWithUser.id,
+      nickName: updatedNoteWithUser.user.nickname,
+      note: updatedNoteWithUser.note,
+      noteColor: updatedNoteWithUser.note_color,
+      createdAt: updatedNoteWithUser.created_at,
+      updatedAt: updatedNoteWithUser.updated_at
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

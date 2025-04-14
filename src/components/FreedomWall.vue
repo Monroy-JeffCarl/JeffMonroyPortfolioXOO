@@ -15,7 +15,7 @@ export default {
       notes: [],
       nickName: "",
       note: "",
-      noteColor: "#f8f9fa",
+      note_color: "#f8f9fa",
       editingIndex: -1,
       modalTitle: "Create a ",
       saveButtonText: "Create Note",
@@ -97,7 +97,7 @@ export default {
       }
     },
     selectColor(color) {
-      this.noteColor = color;
+      this.note_color = color;
     },
     async saveNote() {
       // Validate both fields before saving
@@ -112,18 +112,21 @@ export default {
         const newNote = {
           nickName: this.nickName.trim(),
           note: this.note.trim(),
-          noteColor: this.noteColor,
+          noteColor: this.note_color,
         };
 
         if (this.editingIndex !== -1) {
-          await axios.put(
+          const response = await axios.put(
             `${API_URL}/notes/${this.notes[this.editingIndex].id}`,
             newNote
           );
+          
+          // Update the note in the local state with the response data
           this.notes[this.editingIndex] = {
-            ...this.notes[this.editingIndex],
-            ...newNote,
+            ...response.data,
+            formattedDate: this.notes[this.editingIndex].formattedDate
           };
+          
           this.editingIndex = -1;
           this.modalTitle = "Create a ";
           this.saveButtonText = "Create Note";
@@ -131,21 +134,29 @@ export default {
           this.showSuccessModal = true;
         } else {
           const response = await axios.post(`${API_URL}/notes`, newNote);
-          this.notes.push(response.data);
+          this.notes.push({
+            ...response.data,
+            formattedDate: new Date(response.data.createdAt).toLocaleDateString() +
+              " " +
+              new Date(response.data.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+          });
         }
 
         this.closeModal();
         this.resetForm();
-        setTimeout(() => this.fetchNotes(), 300);
       } catch (error) {
         console.error("Error saving note:", error);
+        alert("Failed to save note. Please try again.");
       }
     },
     editNote(index) {
       const note = this.notes[index];
       this.nickName = note.nickName;
       this.note = note.note;
-      this.noteColor = note.noteColor;
+      this.note_color = note.noteColor;
       this.editingIndex = index;
       this.modalTitle = "Edit ";
       this.saveButtonText = "Update Note";
@@ -180,7 +191,7 @@ export default {
     resetForm() {
       this.nickName = "";
       this.note = "";
-      this.noteColor = "#f8f9fa";
+      this.note_color = "#f8f9fa";
       this.editingIndex = -1;
     },
     toggleSidebar() {
@@ -419,7 +430,7 @@ export default {
                       height: '30px',
                       border: '1px solid #ddd',
                       boxShadow:
-                        noteColor === color ? '0 0 0 2px #007bff' : 'none',
+                        note_color === color ? '0 0 0 2px #007bff' : 'none',
                     }"
                     @click="selectColor(color)"
                   ></button>
