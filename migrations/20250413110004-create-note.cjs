@@ -1,43 +1,45 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
+/** @param {import('sequelize').QueryInterface} queryInterface */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('role_permissions', {
+    await queryInterface.createTable('notes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      role_id: {
+      user_id: {
         type: Sequelize.INTEGER,
+        allowNull: true,
         references: {
-          model: 'roles',
+          model: 'users',
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'SET NULL'
       },
-      permission_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'permissions',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+      note: {
+        type: Sequelize.TEXT
+      },
+      note_color: {
+        type: Sequelize.STRING
+      },
+      is_deleted: {
+        type: Sequelize.BOOLEAN
       },
       created_at: {
-        allowNull: false,
         type: Sequelize.DATE
       },
       updated_at: {
-        allowNull: false,
+        type: Sequelize.DATE
+      },
+      deleted_at: {
         type: Sequelize.DATE
       }
     });
   },
+
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('role_permissions');
+    await queryInterface.dropTable('notes');
   }
 };
