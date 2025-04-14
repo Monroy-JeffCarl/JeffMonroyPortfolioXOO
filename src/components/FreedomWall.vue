@@ -181,12 +181,41 @@ export default {
       this.showNoteModal = true;
     },
     validateNickName() {
-      this.errors.nickName = !this.nickName.trim();
-      return !this.errors.nickName;
+      const nickname = this.nickName.trim();
+      this.errors.nickName = false;
+      
+      if (!nickname) {
+        this.errors.nickName = 'Nickname is required';
+        return false;
+      }
+      
+      if (nickname.length < 2 || nickname.length > 30) {
+        this.errors.nickName = 'Nickname must be between 2 and 30 characters';
+        return false;
+      }
+      
+      if (!/^[a-zA-Z0-9\s]+$/.test(nickname)) {
+        this.errors.nickName = 'Nickname can only contain letters, numbers, and spaces';
+        return false;
+      }
+      
+      return true;
     },
     validateNote() {
-      this.errors.note = !this.note.trim();
-      return !this.errors.note;
+      const note = this.note.trim();
+      this.errors.note = false;
+      
+      if (!note) {
+        this.errors.note = 'Note content is required';
+        return false;
+      }
+      
+      if (note.length < 1 || note.length > 1000) {
+        this.errors.note = 'Note must be between 1 and 1000 characters';
+        return false;
+      }
+      
+      return true;
     },
     openDeleteModal(index, id) {
       this.noteToDelete = { index, id };
@@ -413,27 +442,27 @@ export default {
                   </option>
                 </select>
                 <div class="invalid-feedback" v-if="errors.nickName">
-                  Please select a nickname
+                  {{ errors.nickName }}
                 </div>
               </div>
 
               <div class="mb-3">
                 <label for="noteText" class="form-label"
-                  >Your Note (Max 200 characters)</label
+                  >Your Note (Max 1000 characters)</label
                 >
                 <textarea
                   class="form-control"
                   id="noteText"
                   v-model.trim="note"
                   rows="4"
-                  maxlength="200"
+                  maxlength="1000"
                   @blur="validateNote"
                   @input="validateNote"
                   :class="{ 'is-invalid': errors.note }"
                   required
                 ></textarea>
                 <div v-if="errors.note" class="invalid-feedback d-block">
-                  Note cannot be empty.
+                  {{ errors.note }}
                 </div>
               </div>
 
