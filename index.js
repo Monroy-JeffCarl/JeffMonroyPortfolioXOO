@@ -8,12 +8,18 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5175"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
   })
 );
+
+// Import routes
+const rolesRouter = require('./routes/roles');
+
+// Use routes
+app.use('/roles', rolesRouter);
 
 // Validation middleware
 const validate = (req, res, next) => {
@@ -52,15 +58,21 @@ db.sequelize
   .then(() => console.log("Database connected"))
   .catch((err) => console.error("DB Connection Error:", err));
 
+// Sync database and run seeders
 db.sequelize
   .sync({ alter: true })
-  .then(() => {
+  .then(async () => {
     console.log("Database Synced");
+    
     // Run the seeder
-    const seeder = require('./seeders/20250413120000-create-roles');
-    return seeder.up(db.sequelize.getQueryInterface(), db.Sequelize);
+    try {
+      const seeder = require('./seeders/20250413120000-create-roles');
+      await seeder.up(db.sequelize.getQueryInterface(), db.Sequelize);
+      console.log("Roles and permissions seeded successfully");
+    } catch (error) {
+      console.error("Error seeding roles and permissions:", error);
+    }
   })
-  .then(() => console.log("Roles seeded"))
   .catch((err) => console.error("Sequelize Sync Error:", err));
 
 app.get("/", (req, res) => res.send("Backend is running!"));

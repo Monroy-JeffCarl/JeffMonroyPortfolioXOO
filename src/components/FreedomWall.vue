@@ -415,11 +415,6 @@ export default {
             <h5 class="modal-title">
               {{ modalTitle }} <span class="text-warning">Note</span>
             </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="closeModal"
-            ></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="saveNote">
@@ -507,9 +502,8 @@ export default {
       <!-- Delete Modal -->
       <div v-if="showDeleteModal" class="modal-wrapper">
         <div class="modal-content">
-          <div class="modal-header bg-dark text-light">
+          <div class="modal-header bg-danger text-light">
             <h5 class="modal-title">Delete Note</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeDeleteModal"></button>
           </div>
           <div class="modal-body">
             <p>Are you sure you want to delete this note?</p>
@@ -526,7 +520,6 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-success text-light">
             <h5 class="modal-title">Success</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeSuccessModal"></button>
           </div>
           <div class="modal-body">
             <p>{{ successMessage }}</p>

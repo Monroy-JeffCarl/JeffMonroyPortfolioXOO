@@ -220,7 +220,6 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-dark text-light">
             <h5 class="modal-title">Add New User</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeAddUserModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="addUser">
@@ -264,7 +263,6 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-dark text-light">
             <h5 class="modal-title">Edit User</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeEditUserModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="updateUser">
@@ -306,9 +304,8 @@ export default {
     <div v-if="showDeleteUserModal" class="modal-container">
       <div class="modal-wrapper">
         <div class="modal-content">
-          <div class="modal-header bg-dark text-light">
+          <div class="modal-header bg-danger text-light">
             <h5 class="modal-title">Delete User</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeDeleteUserModal"></button>
           </div>
           <div class="modal-body">
             <p>Are you sure you want to delete user "{{ userToDelete?.nickname }}"?</p>
@@ -327,7 +324,6 @@ export default {
         <div class="modal-content">
           <div class="modal-header bg-success text-light">
             <h5 class="modal-title">Success</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeSuccessModal"></button>
           </div>
           <div class="modal-body">
             <p>{{ successMessage }}</p>
