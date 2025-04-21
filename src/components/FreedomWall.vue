@@ -1,11 +1,10 @@
 <script>
 import { Modal, Dropdown } from "bootstrap";
-import axios from "axios";
 import NavBarComponent from "./NavBar.vue";
 import UsersComponent from "./Users.vue";
 import RolesComponent from "./Roles.vue";
 
-const API_URL = "http://localhost:6411";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: { NavBarComponent, UsersComponent, RolesComponent },
@@ -20,13 +19,15 @@ export default {
       modalTitle: "Create a ",
       saveButtonText: "Create Note",
       colors: [
-        "#f8f9fa",
-        "#e8f5e9",
-        "#fff3e0",
-        "#fce4ec",
-        "#e1f5fe",
-        "#ede7f6",
-        "#fffde7",
+        "#ffffff",
+        "#ffcdd2",
+        "#c8e6c9",
+        "#fff9c4",
+        "#bbdefb",
+        "#e1bee7",
+        "#ffe0b2",
+        "#b2dfdb",
+        "#f8bbd0",
         "#8ACE00",
       ],
       showNoteModal: false,
@@ -63,9 +64,11 @@ export default {
       return this.selectedRole === 'admin';
     }
   },
-  mounted() {
-    this.fetchNotes();
-    this.fetchNicknames();
+  async mounted() {
+    await Promise.all([
+      this.fetchNotes(),
+      this.fetchNicknames()
+    ]);
 
     this.$nextTick(() => {
       document.querySelectorAll(".dropdown-toggle").forEach((el) => {
@@ -91,8 +94,9 @@ export default {
     },
     async fetchNotes() {
       try {
-        const response = await axios.get(`${API_URL}/notes`);
-        this.notes = response.data.map((note) => ({
+        const response = await fetch(`${API_URL}/notes`);
+        const data = await response.json();
+        this.notes = data.map((note) => ({
           ...note,
           formattedDate:
             new Date(note.createdAt).toLocaleDateString() +
@@ -108,8 +112,13 @@ export default {
     },
     async fetchNicknames() {
       try {
-        const response = await axios.get(`${API_URL}/users`);
-        this.availableNicknames = response.data.map((user) => user.nickname);
+        const response = await fetch(`${API_URL}/users`);
+        const data = await response.json();
+        
+        // Sort nicknames alphabetically
+        this.availableNicknames = data
+          .map((user) => user.nickname)
+          .sort((a, b) => a.localeCompare(b));
       } catch (error) {
         console.error("Error fetching nicknames:", error);
       }
@@ -117,8 +126,32 @@ export default {
     selectColor(color) {
       this.note_color = color;
     },
+    async editNote(index) {
+      // Fetch nicknames before opening the modal
+      await this.fetchNicknames();
+      
+      const note = this.notes[index];
+      this.nickName = note.nickName;
+      this.note = note.note;
+      this.note_color = note.noteColor;
+      this.editingIndex = index;
+      this.modalTitle = "Edit ";
+      this.saveButtonText = "Update Note";
+      
+      // Ensure the current nickname is in the list
+      if (!this.availableNicknames.includes(this.nickName)) {
+        this.availableNicknames.push(this.nickName);
+        this.availableNicknames.sort((a, b) => a.localeCompare(b));
+      }
+      
+      this.showNoteModal = true;
+    },
+    openAddUserModal() {
+      // Fetch nicknames before opening the modal
+      this.fetchNicknames();
+      this.showNoteModal = true;
+    },
     async saveNote() {
-      // Validate both fields before saving
       const isNicknameValid = this.validateNickName();
       const isNoteValid = this.validateNote();
 
@@ -134,15 +167,36 @@ export default {
         };
 
         if (this.editingIndex !== -1) {
-          const response = await axios.put(
+          const response = await fetch(
             `${API_URL}/notes/${this.notes[this.editingIndex].id}`,
-            newNote
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(newNote)
+            }
           );
           
-          // Update the note in the local state with the response data
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update note');
+          }
+          
+          const data = await response.json();
+          
+          // Format the date for the updated note
+          const formattedDate = new Date(data.updatedAt).toLocaleDateString() +
+            " " +
+            new Date(data.updatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          
+          // Update the note in the array
           this.notes[this.editingIndex] = {
-            ...response.data,
-            formattedDate: this.notes[this.editingIndex].formattedDate
+            ...data,
+            formattedDate
           };
           
           this.editingIndex = -1;
@@ -151,34 +205,43 @@ export default {
           this.successMessage = "Note updated successfully!";
           this.showSuccessModal = true;
         } else {
-          const response = await axios.post(`${API_URL}/notes`, newNote);
-          this.notes.push({
-            ...response.data,
-            formattedDate: new Date(response.data.createdAt).toLocaleDateString() +
-              " " +
-              new Date(response.data.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+          const response = await fetch(`${API_URL}/notes`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newNote)
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create note');
+          }
+          
+          const data = await response.json();
+          
+          // Format the date for the new note
+          const formattedDate = new Date(data.createdAt).toLocaleDateString() +
+            " " +
+            new Date(data.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          
+          this.notes.unshift({
+            ...data,
+            formattedDate
           });
         }
 
+        // Refresh the notes list to ensure everything is in sync
+        await this.fetchNotes();
         this.closeModal();
         this.resetForm();
       } catch (error) {
         console.error("Error saving note:", error);
-        alert("Failed to save note. Please try again.");
+        alert(error.message || "Failed to save note. Please try again.");
       }
-    },
-    editNote(index) {
-      const note = this.notes[index];
-      this.nickName = note.nickName;
-      this.note = note.note;
-      this.note_color = note.noteColor;
-      this.editingIndex = index;
-      this.modalTitle = "Edit ";
-      this.saveButtonText = "Update Note";
-      this.showNoteModal = true;
     },
     validateNickName() {
       const nickname = this.nickName.trim();
@@ -257,8 +320,10 @@ export default {
     },
     async confirmDelete() {
       try {
-        await axios.delete(`${API_URL}/notes/${this.noteToDelete.id}`);
-        await this.fetchNotes(); // Refresh the notes list
+        await fetch(`${API_URL}/notes/${this.noteToDelete.id}`, {
+          method: 'DELETE'
+        });
+        await this.fetchNotes();
         this.closeDeleteModal();
         this.successMessage = "Note deleted successfully!";
         this.showSuccessModal = true;
@@ -427,17 +492,21 @@ export default {
                   :class="{ 'is-invalid': errors.nickName }"
                   @change="validateNickName"
                 >
-                  <option value="">Select a nickname</option>
+                  <option value="" disabled>Select a nickname</option>
                   <option
                     v-for="nick in availableNicknames"
                     :key="nick"
                     :value="nick"
+                    :selected="nick === nickName"
                   >
                     {{ nick }}
                   </option>
                 </select>
                 <div class="invalid-feedback" v-if="errors.nickName">
                   {{ errors.nickName }}
+                </div>
+                <div class="form-text" v-if="availableNicknames.length === 0">
+                  Loading nicknames...
                 </div>
               </div>
 

@@ -8,20 +8,17 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    origin: true, // Allow all origins during development
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
   })
 );
 
-// Import routes
 const rolesRouter = require('./routes/roles');
 
-// Use routes
 app.use('/roles', rolesRouter);
 
-// Validation middleware
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -30,7 +27,6 @@ const validate = (req, res, next) => {
   next();
 };
 
-// Note validators
 const noteValidators = [
   body('nickName')
     .trim()
@@ -58,7 +54,6 @@ db.sequelize
   .then(() => console.log("Database connected"))
   .catch((err) => console.error("DB Connection Error:", err));
 
-// Sync database and run seeders
 db.sequelize
   .sync({ alter: true })
   .then(async () => {
@@ -110,7 +105,6 @@ app.post("/notes", noteValidators, validate, async (req, res) => {
   try {
     const { nickName, note, noteColor } = req.body;
 
-    // Find the user by nickname
     const user = await db.User.findOne({
       where: {
         nickname: nickName,
@@ -129,8 +123,6 @@ app.post("/notes", noteValidators, validate, async (req, res) => {
       created_at: new Date(),
       updated_at: new Date()
     });
-
-    // Fetch the created note with user information
     const createdNote = await db.Note.findByPk(newNote.id, {
       include: [{
         model: db.User,
@@ -156,7 +148,6 @@ app.put("/notes/:id", noteValidators, validate, async (req, res) => {
   try {
     const { nickName, note, noteColor } = req.body;
     
-    // Find the user by nickname
     const user = await db.User.findOne({
       where: {
         nickname: nickName,
@@ -182,7 +173,6 @@ app.put("/notes/:id", noteValidators, validate, async (req, res) => {
       return res.status(404).json({ error: "Note not found" });
     }
     
-    // Fetch the updated note with user information
     const updatedNoteWithUser = await db.Note.findByPk(req.params.id, {
       include: [{
         model: db.User,
@@ -231,10 +221,10 @@ app.get("/users", async (req, res) => {
         model: db.Role,
         as: 'role',
         attributes: ['role_title']
-      }]
+      }],
+      order: [['nickname', 'ASC']] // Sort users by nickname
     });
-    
-    // Transform the response to match frontend expectations
+
     const transformedUsers = users.map(user => ({
       id: user.id,
       nickname: user.nickname,
@@ -252,18 +242,15 @@ app.post("/users", async (req, res) => {
   try {
     const { nickname, role_id } = req.body;
     
-    // Validate required fields
     if (!nickname || !role_id) {
       return res.status(400).json({ error: "Nickname and role_id are required" });
     }
 
-    // Check if role exists
     const role = await db.Role.findByPk(role_id);
     if (!role) {
       return res.status(400).json({ error: "Invalid role_id" });
     }
 
-    // Check if user with same nickname already exists
     const existingUser = await db.User.findOne({
       where: {
         nickname: nickname,
@@ -283,7 +270,6 @@ app.post("/users", async (req, res) => {
       updated_at: new Date()
     });
 
-    // Fetch the created user with role information
     const createdUser = await db.User.findByPk(newUser.id, {
       include: [{
         model: db.Role,
@@ -303,24 +289,20 @@ app.post("/users", async (req, res) => {
   }
 });
 
-// Update user endpoint
 app.put("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { nickname, role_id } = req.body;
 
-    // Validate required fields
     if (!nickname || !role_id) {
       return res.status(400).json({ error: "Nickname and role_id are required" });
     }
 
-    // Check if role exists
     const role = await db.Role.findByPk(role_id);
     if (!role) {
       return res.status(400).json({ error: "Invalid role_id" });
     }
 
-    // Check if user exists and is not deleted
     const user = await db.User.findOne({
       where: {
         id: id,
@@ -332,7 +314,6 @@ app.put("/users/:id", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Check if new nickname is already taken by another user
     const existingUser = await db.User.findOne({
       where: {
         nickname: nickname,
@@ -345,14 +326,12 @@ app.put("/users/:id", async (req, res) => {
       return res.status(400).json({ error: "This nickname is already taken" });
     }
 
-    // Update the user
     await user.update({
       nickname,
       role_id,
       updated_at: new Date()
     });
 
-    // Fetch the updated user with role information
     const updatedUser = await db.User.findByPk(id, {
       include: [{
         model: db.Role,
@@ -372,12 +351,10 @@ app.put("/users/:id", async (req, res) => {
   }
 });
 
-// Delete user endpoint (soft delete)
 app.delete("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if user exists and is not deleted
     const user = await db.User.findOne({
       where: {
         id: id,
@@ -389,7 +366,6 @@ app.delete("/users/:id", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Soft delete the user
     await user.update({
       is_deleted: true,
       deleted_at: new Date(),
@@ -404,6 +380,7 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 6411;
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
+const HOST = process.env.HOST || 'localhost';
+app.listen(PORT, HOST, () =>
+  console.log(`Server running on http://${HOST}:${PORT}`)
 );

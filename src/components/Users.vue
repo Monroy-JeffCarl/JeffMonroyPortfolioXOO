@@ -1,7 +1,5 @@
 <script>
-import axios from "axios";
-
-const API_URL = "http://localhost:6411";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   data() {
@@ -30,8 +28,9 @@ export default {
   methods: {
     async fetchUsers() {
       try {
-        const response = await axios.get(`${API_URL}/users`);
-        this.users = response.data;
+        const response = await fetch(`${API_URL}/users`);
+        const data = await response.json();
+        this.users = data;
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -87,35 +86,50 @@ export default {
       }
 
       try {
-        // Check if nickname already exists
         if (this.users.some(user => user.nickname.toLowerCase() === this.newUser.nickname.toLowerCase())) {
           alert("This nickname already exists!");
           return;
         }
 
-        // Map role string to role_id
         const roleMap = {
           "Admin": 1,
           "User": 2,
           "Guest": 3
         };
 
-        // Add the new user to the database
-        await axios.post(`${API_URL}/users`, {
+        const requestData = {
           nickname: this.newUser.nickname.trim(),
           role_id: roleMap[this.newUser.role]
+        };
+
+        console.log('Sending request to:', `${API_URL}/users`);
+        console.log('Request data:', requestData);
+
+        const response = await fetch(`${API_URL}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
         });
 
-        // Refresh the users list
+        console.log('Response status:', response.status);
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
+
+        if (!response.ok) {
+          throw new Error(responseData.error || 'Failed to add user');
+        }
+
         await this.fetchUsers();
         this.closeAddUserModal();
       } catch (error) {
         console.error("Error adding user:", error);
-        if (error.response?.data?.error) {
-          alert(error.response.data.error);
-        } else {
-          alert("Failed to add user. Please try again.");
-        }
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack
+        });
+        alert(error.message || "Failed to add user. Please try again.");
       }
     },
     async updateUser() {
@@ -124,33 +138,33 @@ export default {
       }
 
       try {
-        // Map role string to role_id
         const roleMap = {
           "Admin": 1,
           "User": 2,
           "Guest": 3
         };
 
-        // Update the user in the database
-        const response = await axios.put(`${API_URL}/users/${this.editingUser.id}`, {
-          nickname: this.editingUser.nickname.trim(),
-          role_id: roleMap[this.editingUser.role]
-        }, {
+        const response = await fetch(`${API_URL}/users/${this.editingUser.id}`, {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({
+            nickname: this.editingUser.nickname.trim(),
+            role_id: roleMap[this.editingUser.role]
+          })
         });
 
-        // Refresh the users list
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update user');
+        }
+
         await this.fetchUsers();
         this.closeEditUserModal();
       } catch (error) {
         console.error("Error updating user:", error);
-        if (error.response?.data?.error) {
-          alert(error.response.data.error);
-        } else {
-          alert("Failed to update user. Please try again.");
-        }
+        alert(error.message || "Failed to update user. Please try again.");
       }
     },
     closeSuccessModal() {
@@ -159,22 +173,25 @@ export default {
     },
     async deleteUser() {
       try {
-        const response = await axios.delete(`${API_URL}/users/${this.userToDelete.id}`, {
+        const response = await fetch(`${API_URL}/users/${this.userToDelete.id}`, {
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json'
           }
         });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete user');
+        }
+
         await this.fetchUsers();
         this.closeDeleteUserModal();
         this.successMessage = "User deleted successfully!";
         this.showSuccessModal = true;
       } catch (error) {
         console.error("Error deleting user:", error);
-        if (error.response?.data?.error) {
-          alert(error.response.data.error);
-        } else {
-          alert("Failed to delete user. Please try again.");
-        }
+        alert(error.message || "Failed to delete user. Please try again.");
       }
     }
   },

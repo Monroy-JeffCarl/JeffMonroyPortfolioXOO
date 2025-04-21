@@ -1,6 +1,7 @@
 <script>
-import axios from "axios";
 import { Modal } from 'bootstrap';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   data() {
@@ -36,16 +37,18 @@ export default {
   methods: {
     async fetchRoles() {
       try {
-        const response = await axios.get('http://localhost:6411/roles');
-        this.roles = response.data;
+        const response = await fetch(`${API_URL}/roles`);
+        const data = await response.json();
+        this.roles = data;
       } catch (error) {
         console.error('Error fetching roles:', error);
       }
     },
     async fetchPermissions() {
       try {
-        const response = await axios.get('http://localhost:6411/roles/permissions');
-        this.permissions = response.data;
+        const response = await fetch(`${API_URL}/roles/permissions`);
+        const data = await response.json();
+        this.permissions = data;
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -74,8 +77,9 @@ export default {
     async editRole(role) {
       this.selectedRole = role;
       try {
-        const response = await axios.get(`http://localhost:6411/roles/${role.id}/permissions`);
-        this.selectedPermissions = response.data.map(p => p.id);
+        const response = await fetch(`${API_URL}/roles/${role.id}/permissions`);
+        const data = await response.json();
+        this.selectedPermissions = data.map(p => p.id);
         this.modal = new Modal(this.$refs.editModal);
         this.modal.show();
       } catch (error) {
@@ -96,17 +100,28 @@ export default {
           permissions: this.selectedPermissions
         });
         
-        const response = await axios.put(`http://localhost:6411/roles/${this.selectedRole.id}/permissions`, {
-          permissions: this.selectedPermissions
+        const response = await fetch(`${API_URL}/roles/${this.selectedRole.id}/permissions`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            permissions: this.selectedPermissions
+          })
         });
         
-        console.log('Save response:', response.data);
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update permissions');
+        }
+
+        const data = await response.json();
+        console.log('Save response:', data);
         this.closeModal();
         await this.fetchRoles();
       } catch (error) {
         console.error('Error updating permissions:', {
-          error: error.response?.data || error.message,
-          status: error.response?.status,
+          error: error.message,
           roleId: this.selectedRole?.id,
           permissions: this.selectedPermissions
         });
