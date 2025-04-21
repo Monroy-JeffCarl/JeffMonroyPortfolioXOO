@@ -34,9 +34,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const selectRole = (role) => {
-  // Store the selected role in localStorage
   localStorage.setItem('selectedRole', role);
-  // Navigate to the Freedom Wall with the selected role
   router.push('/freedom-wall');
 };
 </script>

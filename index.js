@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: true, // Allow all origins during development
+    origin: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
@@ -59,7 +59,7 @@ db.sequelize
   .then(async () => {
     console.log("Database Synced");
     
-    // Run the seeder
+    //Seeder
     try {
       const seeder = require('./seeders/20250413120000-create-roles');
       await seeder.up(db.sequelize.getQueryInterface(), db.Sequelize);
@@ -222,7 +222,7 @@ app.get("/users", async (req, res) => {
         as: 'role',
         attributes: ['role_title']
       }],
-      order: [['nickname', 'ASC']] // Sort users by nickname
+      order: [['nickname', 'ASC']]
     });
 
     const transformedUsers = users.map(user => ({

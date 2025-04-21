@@ -6,25 +6,20 @@ const router = useRouter();
 const route = useRoute();
 
 const scrollToSection = (sectionId, event) => {
-  // Prevent default anchor behavior
   event.preventDefault();
 
-  // Handle Freedom Wall navigation separately
   if (sectionId === 'freedom-wall') {
-    // Clear any existing role selection
     localStorage.removeItem('selectedRole');
     router.push('/role-selection');
     return;
   }
 
-  // If we're on the Freedom Wall page, navigate to home first
   if (route.path === '/freedom-wall') {
     router.push('/').then(() => {
-      // Wait for navigation to complete before scrolling
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
-          const elementTop = element.offsetTop - 80; // Account for navbar height
+          const elementTop = element.offsetTop - 80;
           window.scrollTo({
             top: elementTop,
             behavior: 'smooth'
@@ -35,15 +30,12 @@ const scrollToSection = (sectionId, event) => {
     return;
   }
 
-  // If we're already on the home page
   if (route.path === '/') {
     const element = document.getElementById(sectionId);
     if (element) {
-      // Get current scroll position
       const currentScroll = window.scrollY;
-      const elementTop = element.offsetTop - 80; // Account for navbar height
-      
-      // Only scroll if we're not already at that section
+      const elementTop = element.offsetTop - 80; 
+
       if (Math.abs(currentScroll - elementTop) > 10) {
         window.scrollTo({
           top: elementTop,

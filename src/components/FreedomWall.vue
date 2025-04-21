@@ -115,7 +115,6 @@ export default {
         const response = await fetch(`${API_URL}/users`);
         const data = await response.json();
         
-        // Sort nicknames alphabetically
         this.availableNicknames = data
           .map((user) => user.nickname)
           .sort((a, b) => a.localeCompare(b));
@@ -127,7 +126,6 @@ export default {
       this.note_color = color;
     },
     async editNote(index) {
-      // Fetch nicknames before opening the modal
       await this.fetchNicknames();
       
       const note = this.notes[index];
@@ -138,7 +136,6 @@ export default {
       this.modalTitle = "Edit ";
       this.saveButtonText = "Update Note";
       
-      // Ensure the current nickname is in the list
       if (!this.availableNicknames.includes(this.nickName)) {
         this.availableNicknames.push(this.nickName);
         this.availableNicknames.sort((a, b) => a.localeCompare(b));
@@ -147,7 +144,6 @@ export default {
       this.showNoteModal = true;
     },
     openAddUserModal() {
-      // Fetch nicknames before opening the modal
       this.fetchNicknames();
       this.showNoteModal = true;
     },
@@ -185,15 +181,13 @@ export default {
           
           const data = await response.json();
           
-          // Format the date for the updated note
           const formattedDate = new Date(data.updatedAt).toLocaleDateString() +
             " " +
             new Date(data.updatedAt).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             });
-          
-          // Update the note in the array
+ 
           this.notes[this.editingIndex] = {
             ...data,
             formattedDate
@@ -220,7 +214,6 @@ export default {
           
           const data = await response.json();
           
-          // Format the date for the new note
           const formattedDate = new Date(data.createdAt).toLocaleDateString() +
             " " +
             new Date(data.createdAt).toLocaleTimeString([], {
@@ -234,7 +227,6 @@ export default {
           });
         }
 
-        // Refresh the notes list to ensure everything is in sync
         await this.fetchNotes();
         this.closeModal();
         this.resetForm();
