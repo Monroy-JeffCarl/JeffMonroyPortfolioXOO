@@ -382,19 +382,15 @@ export default {
         </div>
       </div>
 
-      <!-- Content Area -->
       <div class="content-area">
-        <!-- Users View -->
         <div v-if="currentView === 'users'" class="content-wrapper">
           <UsersComponent />
         </div>
 
-        <!-- Roles View -->
         <div v-if="currentView === 'roles'" class="content-wrapper">
           <RolesComponent />
         </div>
 
-        <!-- Notes View -->
         <div v-if="currentView === 'notes'" class="content-wrapper">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Freedom Wall</h2>
@@ -460,12 +456,10 @@ export default {
       </div>
     </div>
 
-    <!-- Modal Container with Backdrop -->
     <div
       v-if="showNoteModal || showDeleteModal || showSuccessModal"
       class="modal-container"
     >
-      <!-- Note Modal -->
       <div v-if="showNoteModal" class="modal-wrapper">
         <div class="modal-content">
           <div class="modal-header bg-dark text-light">
@@ -560,7 +554,6 @@ export default {
         </div>
       </div>
 
-      <!-- Delete Modal -->
       <div v-if="showDeleteModal" class="modal-wrapper">
         <div class="modal-content">
           <div class="modal-header bg-danger text-light">
@@ -575,8 +568,6 @@ export default {
           </div>
         </div>
       </div>
-
-      <!-- Success Modal -->
       <div v-if="showSuccessModal" class="modal-wrapper">
         <div class="modal-content">
           <div class="modal-header bg-success text-light">
